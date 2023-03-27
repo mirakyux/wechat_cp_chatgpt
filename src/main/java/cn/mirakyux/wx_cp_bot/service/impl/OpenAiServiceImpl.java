@@ -8,11 +8,11 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
+import cn.mirakyux.wx_cp_bot.core.openai.context.MessageCache;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Message;
 import cn.mirakyux.wx_cp_bot.service.OpenAiService;
-import cn.mirakyux.wx_cp_bot.utils.CacheHelper;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +53,7 @@ public class OpenAiServiceImpl implements OpenAiService {
         String cookie = "";
         header.put("Authorization", "Bearer " + openAiConfig.getApiKey());
         Map<String, Object> body = Maps.newHashMap();
-        List<Message> messages = CacheHelper.getGptCache(fromUser);
+        List<Message> messages = MessageCache.get(fromUser);
 
         messages.add(Message.of(Role.USER, text));
         body.put("model", Model.GPT_3_5_TURBO);
@@ -80,7 +80,7 @@ public class OpenAiServiceImpl implements OpenAiService {
         log.info("[{}] gptNewComplete result:{}", id, result);
 
         messages.add(Message.of(Role.ASSISTANT, result));
-        CacheHelper.setGptCache(fromUser, messages);
+        MessageCache.put(fromUser, messages);
         return StringUtils.trimToEmpty(result);
     }
 
@@ -102,10 +102,9 @@ public class OpenAiServiceImpl implements OpenAiService {
             return "访问超时";
         }
         JSONObject jsonObject = JSONUtil.parseObj(response);
-        StringBuilder sb = new StringBuilder().append("total: ").append(jsonObject.getStr("total_granted"))
-                .append("\ntotal used: ").append(jsonObject.getStr("total_used"))
-                .append("\ntotal available: ").append(jsonObject.getStr("total_available"));
 
-        return sb.toString();
+        return "total: " + jsonObject.getStr("total_granted") +
+                "\ntotal used: " + jsonObject.getStr("total_used") +
+                "\ntotal available: " + jsonObject.getStr("total_available");
     }
 }
