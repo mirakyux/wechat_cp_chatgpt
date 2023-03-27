@@ -7,6 +7,7 @@ import cn.mirakyux.wx_cp_bot.service.OpenAiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -26,6 +27,7 @@ public class CallOpenAiListener implements ApplicationListener<CallOpenAiEvent> 
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Async
     @Override
     public void onApplicationEvent(CallOpenAiEvent event) {
         String data = event.getMessage();

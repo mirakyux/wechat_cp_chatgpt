@@ -65,6 +65,7 @@ public class InvokeController {
             String xmlContent = crypt.decrypt(msg);
             log.info("xml content msg: " + xmlContent);
             WxCpMessage message = WxCpMessage.fromXml(xmlContent);
+            message.getMsgId();
             invokeService.handleMessage(message);
             String data = message.getContent();
             return data;

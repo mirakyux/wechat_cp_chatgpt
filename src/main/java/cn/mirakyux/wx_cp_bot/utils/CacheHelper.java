@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,28 +29,19 @@ public class CacheHelper {
                 .expireAfterWrite(120, TimeUnit.MINUTES)
                 .build();
 
+    private static ApplicationEventPublisher applicationEventPublisher;
+
+    @Resource
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        CacheHelper.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    public static ApplicationEventPublisher getApplicationEventPublisher() {
+        return applicationEventPublisher;
+    }
+
     private static final Cache<String, List<Message>> chatGptCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(Duration.ofMinutes(CONTEXT_EXPIRE_MINUTES))
-            .removalListener(new RemovalListener<String, List<Message>>() {
-                /**
-                 * Notifies the listener that a removal occurred at some point in the past.
-                 *
-                 * <p>This does not always signify that the key is now absent from the cache, as it may have
-                 * already been re-added.
-                 *
-                 * @param notification notification
-                 */
-                @Override
-                public void onRemoval(RemovalNotification<String, List<Message>> notification) {
-                    RemovalCause cause = notification.getCause();
-                    if (RemovalCause.REPLACED.equals(cause)) {
-                        return;
-                    }
-                    String to = notification.getKey();
-                    log.info("user[{}] context has been expired", to);
-                    SpringContextUtils.getBean(ApplicationEventPublisher.class).publishEvent(new SendWxCpEvent(CONTEXT_EXPIRE_MINUTES + " 分钟未产生新的对话, 会话已过期", to));
-                }
-            })
+            .expireAfterWrite(Duration.ofMinutes(CONTEXT_EXPIRE_MINUTES))
             .build();
 
     public static void set(String key, String value) {
@@ -67,6 +59,7 @@ public class CacheHelper {
     public static List<Message> getGptCache(String username) {
         List<Message> messages = chatGptCache.getIfPresent(username);
         if (CollectionUtils.isEmpty(messages)) {
+            applicationEventPublisher.publishEvent(new SendWxCpEvent("开启新的会话, 会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期", username));
             return Lists.newArrayList();
         }
         return messages;
