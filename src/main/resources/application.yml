@@ -1,0 +1,5 @@
+spring:
+  profiles:
+    active: example
+server:
+  port: 5665
