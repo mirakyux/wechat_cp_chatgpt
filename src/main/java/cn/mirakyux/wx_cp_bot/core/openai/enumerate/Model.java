@@ -1,5 +1,6 @@
 package cn.mirakyux.wx_cp_bot.core.openai.enumerate;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -12,6 +13,7 @@ public enum Model {
     GPT_3_5_TURBO("gpt-3.5-turbo");
 
     @Getter
+    @JsonValue
     private final String model;
 
     Model(String model) {
