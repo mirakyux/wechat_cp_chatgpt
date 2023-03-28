@@ -1,12 +1,13 @@
 package cn.mirakyux.wx_cp_bot.service.impl;
 
 import cn.hutool.http.HttpRequest;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import cn.mirakyux.wx_cp_bot.core.configuration.WxMpConfig;
 import cn.mirakyux.wx_cp_bot.core.cp.crypto.WXBizMsgCrypt;
+import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpTextMessage;
 import cn.mirakyux.wx_cp_bot.service.WxMpService;
 import cn.mirakyux.wx_cp_bot.utils.CacheHelper;
+import cn.mirakyux.wx_cp_bot.utils.JsonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -40,8 +41,9 @@ public class WxMpServiceImpl implements WxMpService {
                 "&corpsecret=" + corpSecret;
 
         String jsonData = HttpRequest.get(url).execute().body();
-        JSONObject jsonObject = JSONUtil.parseObj(jsonData);
-        String accessToken = jsonObject.getStr("access_token");
+
+        JsonNode json = JsonUtil.fromJson(jsonData);
+        String accessToken = json.get("access_token").asText();
         CacheHelper.set(WECHAT_TOKEN, accessToken);
         return accessToken;
     }
@@ -64,7 +66,7 @@ public class WxMpServiceImpl implements WxMpService {
      */
     @Override
     public void sendMsg(String msg, String to) {
-        String accessToken = null;
+        String accessToken;
         try {
             accessToken = getAccessToken();
         } catch (Exception e) {
@@ -72,20 +74,11 @@ public class WxMpServiceImpl implements WxMpService {
             return;
         }
         String url = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + accessToken;
-        String body = "{\n" +
-                "   \"touser\" : \"" + to + "\",\n" +
-                "   \"msgtype\" : \"text\",\n" +
-                "   \"agentid\" : " + wxMpConfig.getAgentId() + ",\n" +
-                "   \"text\" : {\n" +
-                "       \"content\" : \"" + msg + "\"\n" +
-                "   },\n" +
-                "   \"safe\":0,\n" +
-                "   \"enable_id_trans\": 0,\n" +
-                "   \"enable_duplicate_check\": 0,\n" +
-                "   \"duplicate_check_interval\": 1800\n" +
-                "}";
+
+        WxCpTextMessage message = WxCpTextMessage.generator(to, msg, wxMpConfig.getAgentId());
+
         try {
-            String response = HttpRequest.post(url).body(JSONUtil.toJsonStr(body)).execute().body();
+            String response = HttpRequest.post(url).body(JsonUtil.toJsonString(message)).execute().body();
             log.info("Response: {}", response);
         } catch (Exception e) {
             log.error("sendMsg error", e);

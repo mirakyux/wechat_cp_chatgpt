@@ -1,7 +1,7 @@
 package cn.mirakyux.wx_cp_bot.controller;
 
 import cn.mirakyux.wx_cp_bot.core.cp.crypto.WXBizMsgCrypt;
-import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpMessage;
+import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpInXmlMessage;
 import cn.mirakyux.wx_cp_bot.dto.WechatXmlDto;
 import cn.mirakyux.wx_cp_bot.service.InvokeService;
 import cn.mirakyux.wx_cp_bot.service.WxMpService;
@@ -63,12 +63,10 @@ public class InvokeController {
         try {
             String msg = body.getEncrypt();
             String xmlContent = crypt.decrypt(msg);
-            log.info("xml content msg: " + xmlContent);
-            WxCpMessage message = WxCpMessage.fromXml(xmlContent);
-            message.getMsgId();
+            log.info("xml content msg: {}", xmlContent);
+            WxCpInXmlMessage message = WxCpInXmlMessage.fromXml(xmlContent);
             invokeService.handleMessage(message);
-            String data = message.getContent();
-            return data;
+            return message.getContent();
         } catch (Exception e) {
             log.error("DecryptMsg msg error", e);
             return "";

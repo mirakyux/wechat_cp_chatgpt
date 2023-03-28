@@ -20,7 +20,7 @@ import java.io.Serializable;
 @Data
 @Slf4j
 @XStreamAlias("xml")
-public class WxCpMessage implements Serializable {
+public class WxCpInXmlMessage implements Serializable {
     private static final long serialVersionUID = 10000L;
 
     /**
@@ -80,8 +80,7 @@ public class WxCpMessage implements Serializable {
     @XStreamConverter(value = CDataConverter.class)
     private String picUrl;
 
-    public static WxCpMessage fromXml(String xml) {
-        final WxCpMessage message = (WxCpMessage) XStreamTransformer.of(WxCpMessage.class).fromXML(xml);
-        return message;
+    public static WxCpInXmlMessage fromXml(String xml) {
+        return (WxCpInXmlMessage) XStreamTransformer.of(WxCpInXmlMessage.class).fromXML(xml);
     }
 }

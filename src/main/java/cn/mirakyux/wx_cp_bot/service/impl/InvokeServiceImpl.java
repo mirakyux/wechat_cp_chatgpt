@@ -1,11 +1,10 @@
 package cn.mirakyux.wx_cp_bot.service.impl;
 
 import cn.mirakyux.wx_cp_bot.core.cp.enumerate.MsgTypeEnum;
-import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpMessage;
+import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpInXmlMessage;
 import cn.mirakyux.wx_cp_bot.core.event.CallOpenAiEvent;
 import cn.mirakyux.wx_cp_bot.core.event.SendWxCpEvent;
 import cn.mirakyux.wx_cp_bot.service.InvokeService;
-import cn.mirakyux.wx_cp_bot.service.OpenAiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -24,11 +23,8 @@ public class InvokeServiceImpl implements InvokeService {
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @Resource
-    private OpenAiService openAiService;
-
     @Override
-    public void handleMessage(WxCpMessage message) {
+    public void handleMessage(WxCpInXmlMessage message) {
         MsgTypeEnum msgType = message.getMsgType();
 
         switch (msgType) {

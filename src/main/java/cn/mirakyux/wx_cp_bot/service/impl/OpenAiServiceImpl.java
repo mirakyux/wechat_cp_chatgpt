@@ -3,16 +3,15 @@ package cn.mirakyux.wx_cp_bot.service.impl;
 import cn.hutool.core.lang.generator.Generator;
 import cn.hutool.core.lang.generator.UUIDGenerator;
 import cn.hutool.http.HttpRequest;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
 import cn.mirakyux.wx_cp_bot.core.openai.context.MessageCache;
+import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Message;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
-import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Message;
 import cn.mirakyux.wx_cp_bot.service.OpenAiService;
+import cn.mirakyux.wx_cp_bot.utils.JsonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -63,25 +62,26 @@ public class OpenAiServiceImpl implements OpenAiService {
 
         String response;
         try {
-            response = HttpRequest.post(drawUrl).addHeaders(header).body(JSONUtil.toJsonStr(body)).cookie(cookie).execute().body();
+            response = HttpRequest.post(drawUrl).addHeaders(header).body(JsonUtil.toJsonString(body)).cookie(cookie).execute().body();
+
+            if (StringUtils.isBlank(response)) {
+                return BaseConstant.NOTICE_TIMEOUT;
+            }
+
+            JsonNode node = JsonUtil.fromJson(response);
+            JsonNode choices = node.get("choices");
+
+            String result = choices.get(0).get("message").get("content").asText();
+
+            log.info("[{}] gptNewComplete result:{}", id, result);
+
+            messages.add(Message.of(Role.ASSISTANT, result));
+            MessageCache.put(fromUser, messages);
+            return StringUtils.trimToEmpty(result);
         } catch (Exception e) {
             log.error("[" + id + "] Call OpenAi Failed", e);
             return BaseConstant.NOTICE_TIMEOUT;
         }
-
-        if (StringUtils.isBlank(response)) {
-            return BaseConstant.NOTICE_TIMEOUT;
-        }
-        JSONObject jsonObject = JSONUtil.parseObj(response);
-        JSONArray jsonArray = jsonObject.getJSONArray("choices");
-        JSONObject jsonObject1 = (JSONObject) jsonArray.get(0);
-        JSONObject jsonObject2 = (JSONObject) jsonObject1.get("message");
-        String result = (String) jsonObject2.get("content");
-        log.info("[{}] gptNewComplete result:{}", id, result);
-
-        messages.add(Message.of(Role.ASSISTANT, result));
-        MessageCache.put(fromUser, messages);
-        return StringUtils.trimToEmpty(result);
     }
 
     /**
@@ -99,12 +99,12 @@ public class OpenAiServiceImpl implements OpenAiService {
         try {
             response = HttpRequest.get(url).addHeaders(header).execute().body();
         } catch (Exception e) {
-            return "访问超时";
+            return BaseConstant.NOTICE_TIMEOUT;
         }
-        JSONObject jsonObject = JSONUtil.parseObj(response);
+        JsonNode node = JsonUtil.fromJson(response);
 
-        return "total: " + jsonObject.getStr("total_granted") +
-                "\ntotal used: " + jsonObject.getStr("total_used") +
-                "\ntotal available: " + jsonObject.getStr("total_available");
+        return "total: " + node.get("total_granted").asText() +
+                "\ntotal used: " + node.get("total_used").asText() +
+                "\ntotal available: " + node.get("total_available").asText();
     }
 }
