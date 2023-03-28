@@ -1,7 +1,7 @@
 package cn.mirakyux.wx_cp_bot.core.openai.context;
 
 import cn.mirakyux.wx_cp_bot.core.event.SendWxCpEvent;
-import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Message;
+import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
 import com.google.common.cache.*;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;

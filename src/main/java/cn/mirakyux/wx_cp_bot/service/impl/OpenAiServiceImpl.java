@@ -6,7 +6,8 @@ import cn.hutool.http.HttpRequest;
 import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
 import cn.mirakyux.wx_cp_bot.core.openai.context.MessageCache;
-import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Message;
+import cn.mirakyux.wx_cp_bot.core.openai.model.Completion;
+import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
 import cn.mirakyux.wx_cp_bot.service.OpenAiService;
@@ -60,18 +61,16 @@ public class OpenAiServiceImpl implements OpenAiService {
         body.put("max_tokens", openAiConfig.getMaxTokens());
         body.put("temperature", openAiConfig.getTemperature());
 
-        String response;
+        String response = null;
         try {
             response = HttpRequest.post(drawUrl).addHeaders(header).body(JsonUtil.toJsonString(body)).cookie(cookie).execute().body();
 
             if (StringUtils.isBlank(response)) {
                 return BaseConstant.NOTICE_TIMEOUT;
             }
+            Completion completion = JsonUtil.parseObject(response, Completion.class);
 
-            JsonNode node = JsonUtil.fromJson(response);
-            JsonNode choices = node.get("choices");
-
-            String result = choices.get(0).get("message").get("content").asText();
+            String result = completion.getMessage().getContent();
 
             log.info("[{}] gptNewComplete result:{}", id, result);
 
@@ -80,6 +79,7 @@ public class OpenAiServiceImpl implements OpenAiService {
             return StringUtils.trimToEmpty(result);
         } catch (Exception e) {
             log.error("[" + id + "] Call OpenAi Failed", e);
+            log.error("[{}] response:{}", id, response);
             return BaseConstant.NOTICE_TIMEOUT;
         }
     }

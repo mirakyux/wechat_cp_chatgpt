@@ -1,5 +1,6 @@
 package cn.mirakyux.wx_cp_bot.core.openai.enumerate;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -14,7 +15,8 @@ public enum Role {
     ASSISTANT("assistant");
 
     @Getter
-    private String role;
+    @JsonValue
+    private final String role;
 
     Role(String role) {
         this.role = role;

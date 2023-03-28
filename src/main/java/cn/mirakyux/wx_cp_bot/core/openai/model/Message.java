@@ -1,9 +1,10 @@
-package cn.mirakyux.wx_cp_bot.core.openai.enumerate;
+package cn.mirakyux.wx_cp_bot.core.openai.model;
 
+import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
 import lombok.*;
 
 /**
- * GptDto
+ * Message
  *
  * @author mirakyux
  * @since 2023.03.21
