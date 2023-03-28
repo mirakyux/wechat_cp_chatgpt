@@ -2,17 +2,18 @@ package cn.mirakyux.wx_cp_bot.core.openai.context;
 
 import cn.mirakyux.wx_cp_bot.core.event.SendWxCpEvent;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Message;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.*;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * MessageCache
@@ -34,6 +35,26 @@ public class MessageCache {
 
     private static final Cache<String, List<Message>> chatGptCache = CacheBuilder.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(CONTEXT_EXPIRE_MINUTES))
+            .removalListener(RemovalListeners.asynchronous(new RemovalListener<String, List<Message>>() {
+                /**
+                 * Notifies the listener that a removal occurred at some point in the past.
+                 *
+                 * <p>This does not always signify that the key is now absent from the cache, as it may have
+                 * already been re-added.
+                 *
+                 * @param notification notification
+                 */
+                @Override
+                public void onRemoval(@Nonnull RemovalNotification<String, List<Message>> notification) {
+                    RemovalCause cause = notification.getCause();
+                    if (RemovalCause.REPLACED.equals(cause)) {
+                        return;
+                    }
+                    String to = notification.getKey();
+                    log.info("user[{}] context has been expired", to);
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent(CONTEXT_EXPIRE_MINUTES + " 分钟未产生新的对话, 会话已过期", to));
+                }
+            }, Executors.newSingleThreadExecutor()))
             .build();
 
     public static void put(String username, List<Message> gptMessageDtos) {
