@@ -31,6 +31,8 @@ public class Completion {
 
     private Usage usage;
 
+    private Error error;
+
     public Message getMessage() {
         if (CollectionUtils.isEmpty(choices)) {
             return null;

@@ -6,10 +6,11 @@ import cn.hutool.http.HttpRequest;
 import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
 import cn.mirakyux.wx_cp_bot.core.openai.context.MessageCache;
-import cn.mirakyux.wx_cp_bot.core.openai.model.Completion;
-import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
+import cn.mirakyux.wx_cp_bot.core.openai.model.Completion;
+import cn.mirakyux.wx_cp_bot.core.openai.model.Error;
+import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
 import cn.mirakyux.wx_cp_bot.service.OpenAiService;
 import cn.mirakyux.wx_cp_bot.utils.JsonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -70,12 +71,20 @@ public class OpenAiServiceImpl implements OpenAiService {
             }
             Completion completion = JsonUtil.parseObject(response, Completion.class);
 
-            String result = completion.getMessage().getContent();
+            String result;
+            Error error = completion.getError();
+            if (error != null) {
+                log.error("[{}] Call OpenAi Error, response: {}", id, response);
+                result = error.getCode().getTips();
+                MessageCache.clear(fromUser);
+            } else {
+                result = completion.getMessage().getContent();
 
-            log.info("[{}] gptNewComplete result:{}", id, result);
+                messages.add(Message.of(Role.ASSISTANT, result));
+                MessageCache.put(fromUser, messages);
+                log.info("[{}] gptNewComplete result:{}", id, result);
+            }
 
-            messages.add(Message.of(Role.ASSISTANT, result));
-            MessageCache.put(fromUser, messages);
             return StringUtils.trimToEmpty(result);
         } catch (Exception e) {
             log.error("[" + id + "] Call OpenAi Failed", e);

@@ -52,7 +52,7 @@ public class MessageCache {
                     }
                     String to = notification.getKey();
                     log.info("user[{}] context has been expired", to);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("虽然不一定准时, 但是一定有个会话已经过期了", to));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 虽然不一定准时, 但是一定有个会话已经过期了", to));
                 }
             }, Executors.newSingleThreadExecutor()))
             .build();
@@ -64,9 +64,13 @@ public class MessageCache {
     public static List<Message> get(String username) {
         List<Message> messages = chatGptCache.getIfPresent(username);
         if (CollectionUtils.isEmpty(messages)) {
-            applicationEventPublisher.publishEvent(new SendWxCpEvent("开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期", username));
+            applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期", username));
             return Lists.newArrayList();
         }
         return messages;
+    }
+
+    public static void clear(String username) {
+        chatGptCache.invalidate(username);
     }
 }
