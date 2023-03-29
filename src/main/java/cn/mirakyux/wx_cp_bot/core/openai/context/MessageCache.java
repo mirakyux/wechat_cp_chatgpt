@@ -52,7 +52,7 @@ public class MessageCache {
                     }
                     String to = notification.getKey();
                     log.info("user[{}] context has been expired", to);
-                    // applicationEventPublisher.publishEvent(new SendWxCpEvent(CONTEXT_EXPIRE_MINUTES + " 分钟未产生新的对话, 会话已过期", to));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent("虽然不一定准时, 但是一定有个会话已经过期了", to));
                 }
             }, Executors.newSingleThreadExecutor()))
             .build();
