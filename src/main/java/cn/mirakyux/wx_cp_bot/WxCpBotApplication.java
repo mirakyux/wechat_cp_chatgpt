@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @EnableAsync
 @SpringBootApplication
-public class WxMpBotApplication {
+public class WxCpBotApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(WxMpBotApplication.class, args);
+        SpringApplication.run(WxCpBotApplication.class, args);
     }
 
 }
