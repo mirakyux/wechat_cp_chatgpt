@@ -23,4 +23,6 @@ public interface OpenAiService {
      * @return 余额
      */
     String getBalance();
+
+    String clear(String fromUser);
 }

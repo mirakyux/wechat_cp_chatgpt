@@ -61,6 +61,10 @@
             <artifactId>xstream</artifactId>
             <version>1.4.20</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

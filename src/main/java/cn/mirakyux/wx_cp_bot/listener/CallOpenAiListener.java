@@ -35,8 +35,9 @@ public class CallOpenAiListener implements ApplicationListener<CallOpenAiEvent> 
         String result;
         if (BaseConstant.BALANCE.equals(data)) {
             result = openAiService.getBalance();
+        } else if (BaseConstant.CLEAR_CONTEXT.equals(data)) {
+            result = openAiService.clear(fromUser);
         } else {
-
             result = openAiService.gptNewComplete(data, fromUser);
         }
 

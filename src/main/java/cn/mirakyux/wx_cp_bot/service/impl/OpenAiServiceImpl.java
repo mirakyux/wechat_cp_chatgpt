@@ -114,4 +114,10 @@ public class OpenAiServiceImpl implements OpenAiService {
                 "\ntotal used: " + node.get("total_used").asText() +
                 "\ntotal available: " + node.get("total_available").asText();
     }
+
+    @Override
+    public String clear(String fromUser) {
+        MessageCache.clear(fromUser);
+        return BaseConstant.SUCCESS;
+    }
 }

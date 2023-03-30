@@ -2,19 +2,19 @@ package cn.mirakyux.wx_cp_bot.core.openai.context;
 
 import cn.mirakyux.wx_cp_bot.core.event.SendWxCpEvent;
 import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
-import com.google.common.cache.*;
+import com.github.benmanes.caffeine.cache.*;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 /**
  * MessageCache
@@ -38,28 +38,20 @@ public class MessageCache {
         MessageCache.applicationEventPublisher = applicationEventPublisher;
     }
 
-    private static final Cache<String, List<Message>> chatGptCache = CacheBuilder.newBuilder()
+    private static final  Cache<String, List<Message>> chatGptCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(CONTEXT_EXPIRE_MINUTES))
-            .removalListener(RemovalListeners.asynchronous(new RemovalListener<String, List<Message>>() {
-                /**
-                 * Notifies the listener that a removal occurred at some point in the past.
-                 *
-                 * <p>This does not always signify that the key is now absent from the cache, as it may have
-                 * already been re-added.
-                 *
-                 * @param notification notification
-                 */
+            .scheduler(Scheduler.systemScheduler())
+            .ticker(Ticker.systemTicker())
+            .removalListener(new RemovalListener<String, List<Message>>() {
                 @Override
-                public void onRemoval(@Nonnull RemovalNotification<String, List<Message>> notification) {
-                    RemovalCause cause = notification.getCause();
-                    if (RemovalCause.REPLACED.equals(cause)) {
+                public void onRemoval(@Nullable String key, @Nullable List<Message> messages, @NonNull RemovalCause removalCause) {
+                    if (RemovalCause.REPLACED.equals(removalCause)) {
                         return;
                     }
-                    String to = notification.getKey();
-                    log.info("user[{}] context has been expired", to);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 虽然不一定准时, 但是一定有个会话已经过期了", to));
+                    log.info("user[{}] context has been expired", key);
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 虽然不一定准时, 但是一定有个会话已经过期了", key));
                 }
-            }, Executors.newSingleThreadExecutor()))
+            })
             .build();
 
     public static void put(String username, List<Message> gptMessageDtos) {
@@ -75,7 +67,7 @@ public class MessageCache {
                     messages = Lists.newArrayList();
                     messages.add(message);
                     chatGptCache.put(username, messages);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期", username));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
                 }
             }
         }
@@ -90,7 +82,7 @@ public class MessageCache {
                 if (messages == null) {
                     messages = Lists.newArrayList();
                     chatGptCache.put(username, messages);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期", username));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
                 }
             }
         }
