@@ -59,22 +59,16 @@ public class MessageCache {
     }
 
     public static List<Message> addAndGet(String username, Message message) {
-        List<Message> messages = chatGptCache.getIfPresent(username);
-        if (messages == null) {
-            synchronized (getLock(username)) {
-                messages = chatGptCache.getIfPresent(username);
-                if (messages == null) {
-                    messages = Lists.newArrayList();
-                    messages.add(message);
-                    chatGptCache.put(username, messages);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
-                } else {
-                    messages.add(message);
-                    chatGptCache.put(username, messages);
-                }
+        synchronized (getLock(username)) {
+            List<Message> messages = chatGptCache.getIfPresent(username);
+            if (messages == null) {
+                messages = Lists.newArrayList();
+                applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
             }
+            messages.add(message);
+            chatGptCache.put(username, messages);
+            return messages;
         }
-        return messages;
     }
 
     public static List<Message> get(String username) {
