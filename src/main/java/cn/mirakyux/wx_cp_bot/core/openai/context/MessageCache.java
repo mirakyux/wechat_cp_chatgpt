@@ -68,6 +68,9 @@ public class MessageCache {
                     messages.add(message);
                     chatGptCache.put(username, messages);
                     applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
+                } else {
+                    messages.add(message);
+                    chatGptCache.put(username, messages);
                 }
             }
         }
