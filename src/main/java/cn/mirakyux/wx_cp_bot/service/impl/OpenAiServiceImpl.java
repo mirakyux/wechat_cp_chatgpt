@@ -54,9 +54,8 @@ public class OpenAiServiceImpl implements OpenAiService {
         String cookie = "";
         header.put("Authorization", "Bearer " + openAiConfig.getApiKey());
         Map<String, Object> body = Maps.newHashMap();
-        List<Message> messages = MessageCache.get(fromUser);
+        List<Message> messages = MessageCache.addAndGet(fromUser, Message.of(Role.USER, text));
 
-        messages.add(Message.of(Role.USER, text));
         body.put("model", Model.GPT_3_5_TURBO);
         body.put("messages", messages);
         body.put("max_tokens", openAiConfig.getMaxTokens());
@@ -80,8 +79,7 @@ public class OpenAiServiceImpl implements OpenAiService {
             } else {
                 result = completion.getMessage().getContent();
 
-                messages.add(Message.of(Role.ASSISTANT, result));
-                MessageCache.put(fromUser, messages);
+                MessageCache.addAndGet(fromUser, Message.of(Role.ASSISTANT, result));
                 log.info("[{}] gptNewComplete result:{}", id, result);
             }
 
