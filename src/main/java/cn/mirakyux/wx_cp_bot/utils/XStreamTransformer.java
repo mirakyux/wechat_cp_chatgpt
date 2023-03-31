@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2023.03.27
  */
 public class XStreamTransformer {
-    private static final ConcurrentHashMap<Class, XStream> X_STREAM_MAP = new ConcurrentHashMap<Class, XStream>();
+    private static final ConcurrentHashMap<Class, XStream> X_STREAM_MAP = new ConcurrentHashMap<>();
 
     public static XStream of(Class clazz) {
         XStream xStream = X_STREAM_MAP.get(clazz);
