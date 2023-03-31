@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * WxMpConfig
@@ -13,16 +16,22 @@ import org.springframework.stereotype.Component;
  */
 @Getter
 @Setter
+@Validated
 @Component
-@ConfigurationProperties(
-        prefix = "wechat",
-        ignoreUnknownFields = true)
-public class WxMpConfig {
+@ConfigurationProperties(prefix = "wechat.cp")
+public class WxCpConfig {
+    @NotNull
     private String token;
+
+    @NotNull
     private String corpID;
+
+    @NotNull
     private String encodingAESKey;
 
+    @NotNull
     private String corpSecret;
 
+    @NotNull
     private String agentId;
 }

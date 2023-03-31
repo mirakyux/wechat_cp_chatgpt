@@ -1,10 +1,13 @@
 package cn.mirakyux.wx_cp_bot.core.configuration;
 
+import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -15,18 +18,20 @@ import java.math.BigDecimal;
  */
 @Getter
 @Setter
+@Validated
 @Component
-@ConfigurationProperties(
-        prefix = "open-ai"
-)
+@ConfigurationProperties(prefix = "open-ai")
 public class OpenAiConfig {
+    @NotNull
     private String apiKey;
 
-    private Integer maxContext;
+    private Integer maxContext = 16;
 
-    private Integer holdingTime;
+    private Integer holdingTime = 30;
 
-    private Long maxTokens;
+    private Long maxTokens = 1024L;
 
-    private BigDecimal temperature;
+    private BigDecimal temperature = BigDecimal.ONE;
+
+    private Model model = Model.GPT_3_5_TURBO;
 }

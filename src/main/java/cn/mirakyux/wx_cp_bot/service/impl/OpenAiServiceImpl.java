@@ -7,7 +7,6 @@ import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
 import cn.mirakyux.wx_cp_bot.core.constant.UrlConstant;
 import cn.mirakyux.wx_cp_bot.core.openai.context.MessageCache;
-import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
 import cn.mirakyux.wx_cp_bot.core.openai.model.Completion;
 import cn.mirakyux.wx_cp_bot.core.openai.model.Error;
@@ -55,7 +54,7 @@ public class OpenAiServiceImpl implements OpenAiService {
         Map<String, Object> body = Maps.newHashMap();
         Queue<Message> messages = MessageCache.addAndGet(fromUser, Message.of(Role.USER, text));
 
-        body.put("model", Model.GPT_3_5_TURBO);
+        body.put("model", openAiConfig.getModel());
         body.put("messages", messages);
         body.put("max_tokens", openAiConfig.getMaxTokens());
         body.put("temperature", openAiConfig.getTemperature());

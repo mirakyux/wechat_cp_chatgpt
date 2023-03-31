@@ -1,7 +1,7 @@
 package cn.mirakyux.wx_cp_bot.service.impl;
 
 import cn.hutool.http.HttpRequest;
-import cn.mirakyux.wx_cp_bot.core.configuration.WxMpConfig;
+import cn.mirakyux.wx_cp_bot.core.configuration.WxCpConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.UrlConstant;
 import cn.mirakyux.wx_cp_bot.core.cp.crypto.WXBizMsgCrypt;
 import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpTextMessage;
@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 @Service
 public class WxMpServiceImpl implements WxMpService {
     @Resource
-    WxMpConfig wxMpConfig;
+    WxCpConfig wxCpConfig;
 
     private static final String WECHAT_TOKEN = "WECHAT_TOKEN";
 
@@ -37,7 +37,7 @@ public class WxMpServiceImpl implements WxMpService {
             return data;
         }
         
-        String url = String.format(UrlConstant.WX_CP_ACCESS_URL, wxMpConfig.getCorpID(), wxMpConfig.getCorpSecret());
+        String url = String.format(UrlConstant.WX_CP_ACCESS_URL, wxCpConfig.getCorpID(), wxCpConfig.getCorpSecret());
 
         String jsonData = HttpRequest.get(url).execute().body();
 
@@ -54,7 +54,7 @@ public class WxMpServiceImpl implements WxMpService {
      */
     @Override
     public WXBizMsgCrypt getCrypt() {
-        return new WXBizMsgCrypt(wxMpConfig.getToken(), wxMpConfig.getEncodingAESKey(), wxMpConfig.getCorpID());
+        return new WXBizMsgCrypt(wxCpConfig.getToken(), wxCpConfig.getEncodingAESKey(), wxCpConfig.getCorpID());
     }
 
     /**
@@ -74,7 +74,7 @@ public class WxMpServiceImpl implements WxMpService {
         }
         String url = String.format(UrlConstant.WX_CP_REQUEST_URL, accessToken);
 
-        WxCpTextMessage message = WxCpTextMessage.generator(to, msg, wxMpConfig.getAgentId());
+        WxCpTextMessage message = WxCpTextMessage.generator(to, msg, wxCpConfig.getAgentId());
 
         try {
             String response = HttpRequest.post(url).body(JsonUtil.toJsonString(message)).execute().body();
