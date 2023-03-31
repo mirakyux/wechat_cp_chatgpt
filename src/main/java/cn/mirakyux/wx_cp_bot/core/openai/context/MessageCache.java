@@ -1,10 +1,11 @@
 package cn.mirakyux.wx_cp_bot.core.openai.context;
 
+import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
 import cn.mirakyux.wx_cp_bot.core.event.SendWxCpEvent;
 import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
 import com.github.benmanes.caffeine.cache.*;
-import com.google.common.collect.Lists;
+import com.google.common.collect.EvictingQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * MessageCache
@@ -30,6 +31,10 @@ public class MessageCache {
 
     private static ApplicationEventPublisher applicationEventPublisher;
 
+    private static OpenAiConfig openAiConfig;
+
+    private static Cache<String, Queue<Message>> chatGptCache;
+
     private static final Map<String, Object> lockMap = new HashMap<>();
 
     private static final Object mapLock = new Object();
@@ -39,31 +44,32 @@ public class MessageCache {
         MessageCache.applicationEventPublisher = applicationEventPublisher;
     }
 
-    private static final  Cache<String, List<Message>> chatGptCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(CONTEXT_EXPIRE_MINUTES))
-            .scheduler(Scheduler.systemScheduler())
-            .ticker(Ticker.systemTicker())
-            .removalListener(new RemovalListener<String, List<Message>>() {
-                @Override
-                public void onRemoval(@Nullable String key, @Nullable List<Message> messages, @NonNull RemovalCause removalCause) {
+    @Resource
+    private void setOpenAiConfig(OpenAiConfig openAiConfig) {
+        MessageCache.openAiConfig = openAiConfig;
+        MessageCache.chatGptCache = Caffeine.newBuilder()
+                .expireAfterWrite(Duration.ofMinutes(openAiConfig.getHoldingTime()))
+                .scheduler(Scheduler.systemScheduler())
+                .ticker(Ticker.systemTicker())
+                .removalListener((RemovalListener<String, Queue<Message>>) (key, messages, removalCause) -> {
                     if (RemovalCause.REPLACED.equals(removalCause)) {
                         return;
                     }
                     log.info("user[{}] context has been expired", key);
                     applicationEventPublisher.publishEvent(new SendWxCpEvent(BaseConstant.CONTEXT_EXPIRE, key));
-                }
-            })
-            .build();
+                })
+                .build();
+    }
 
-    public static void put(String username, List<Message> messages) {
+    public static void put(String username, Queue<Message> messages) {
         chatGptCache.put(username, messages);
     }
 
-    public static List<Message> addAndGet(String username, Message message) {
+    public static Queue<Message> addAndGet(String username, Message message) {
         synchronized (getLock(username)) {
-            List<Message> messages = chatGptCache.getIfPresent(username);
+            Queue<Message> messages = chatGptCache.getIfPresent(username);
             if (messages == null) {
-                messages = Lists.newArrayList();
+                messages = EvictingQueue.create(openAiConfig.getMaxContext());
                 applicationEventPublisher.publishEvent(new SendWxCpEvent(String.format(BaseConstant.OPEN_CONTEXT, CONTEXT_EXPIRE_MINUTES), username));
             }
             messages.add(message);
@@ -72,13 +78,13 @@ public class MessageCache {
         }
     }
 
-    public static List<Message> get(String username) {
-        List<Message> messages = chatGptCache.getIfPresent(username);
+    public static Queue<Message> get(String username) {
+        Queue<Message> messages = chatGptCache.getIfPresent(username);
         if (messages == null) {
             synchronized (getLock(username)) {
                 messages = chatGptCache.getIfPresent(username);
                 if (messages == null) {
-                    messages = Lists.newArrayList();
+                    messages = EvictingQueue.create(openAiConfig.getMaxContext());
                     chatGptCache.put(username, messages);
                     applicationEventPublisher.publishEvent(new SendWxCpEvent(String.format(BaseConstant.OPEN_CONTEXT, CONTEXT_EXPIRE_MINUTES), username));
                 }

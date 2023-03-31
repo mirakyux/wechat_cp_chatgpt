@@ -17,12 +17,12 @@ import java.math.BigDecimal;
 @Setter
 @Component
 @ConfigurationProperties(
-        prefix = "open-ai",
-        ignoreUnknownFields = true)
+        prefix = "open-ai"
+)
 public class OpenAiConfig {
     private String apiKey;
 
-    private Integer flowNum;
+    private Integer maxContext;
 
     private Integer holdingTime;
 

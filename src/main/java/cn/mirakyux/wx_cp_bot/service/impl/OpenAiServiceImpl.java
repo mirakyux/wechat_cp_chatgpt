@@ -21,8 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * OpenAiServiceImpl
@@ -53,7 +53,7 @@ public class OpenAiServiceImpl implements OpenAiService {
         Map<String, String> header = Maps.newHashMap();
         header.put("Authorization", "Bearer " + openAiConfig.getApiKey());
         Map<String, Object> body = Maps.newHashMap();
-        List<Message> messages = MessageCache.addAndGet(fromUser, Message.of(Role.USER, text));
+        Queue<Message> messages = MessageCache.addAndGet(fromUser, Message.of(Role.USER, text));
 
         body.put("model", Model.GPT_3_5_TURBO);
         body.put("messages", messages);

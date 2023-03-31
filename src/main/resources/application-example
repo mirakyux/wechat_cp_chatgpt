@@ -1,6 +1,6 @@
 open-ai:
   apiKey: [Openai Secret]
-  flowNum: 15
+  maxContext: 15
   holdingTime: 10
   maxTokens: 1024
   temperature: 1
