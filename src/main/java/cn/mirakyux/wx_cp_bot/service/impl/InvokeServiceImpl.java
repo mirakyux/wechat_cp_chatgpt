@@ -1,5 +1,7 @@
 package cn.mirakyux.wx_cp_bot.service.impl;
 
+import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
+import cn.mirakyux.wx_cp_bot.core.cp.enumerate.EventEnum;
 import cn.mirakyux.wx_cp_bot.core.cp.enumerate.MsgTypeEnum;
 import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpInXmlMessage;
 import cn.mirakyux.wx_cp_bot.core.event.CallOpenAiEvent;
@@ -32,7 +34,13 @@ public class InvokeServiceImpl implements InvokeService {
                 applicationEventPublisher.publishEvent(new CallOpenAiEvent(message.getContent(), message.getFromUserName()));
                 break;
             case IMAGE:
-                applicationEventPublisher.publishEvent(new SendWxCpEvent("图片下载链接: " + message.getPicUrl(), message.getFromUserName()));
+                applicationEventPublisher.publishEvent(new SendWxCpEvent(String.format(BaseConstant.PIC_URL, message.getPicUrl()), message.getFromUserName()));
+                break;
+            case EVENT:
+                EventEnum event = message.getEvent();
+                if (event == EventEnum.SUBSCRIBE) {
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent(BaseConstant.WELCOME, message.getFromUserName()));
+                }
                 break;
             default: break;
         }

@@ -1,7 +1,9 @@
 package cn.mirakyux.wx_cp_bot.core.cp.model;
 
 import cn.mirakyux.wx_cp_bot.core.cp.converter.CDataConverter;
+import cn.mirakyux.wx_cp_bot.core.cp.converter.EventConverter;
 import cn.mirakyux.wx_cp_bot.core.cp.converter.MsgTypeConverter;
+import cn.mirakyux.wx_cp_bot.core.cp.enumerate.EventEnum;
 import cn.mirakyux.wx_cp_bot.core.cp.enumerate.MsgTypeEnum;
 import cn.mirakyux.wx_cp_bot.utils.XStreamTransformer;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -79,6 +81,17 @@ public class WxCpInXmlMessage implements Serializable {
     @XStreamAlias("PicUrl")
     @XStreamConverter(value = CDataConverter.class)
     private String picUrl;
+
+    /**
+     * 事件类型, 只解析subscribe和unsubscribe, 别的先不做处理
+     * <ul>
+     *     <li>subscribe</li>
+     *     <li>unsubscribe</li>
+     * </ul>
+     */
+    @XStreamAlias("Event")
+    @XStreamConverter(value = EventConverter.class)
+    private EventEnum event;
 
     public static WxCpInXmlMessage fromXml(String xml) {
         return (WxCpInXmlMessage) XStreamTransformer.of(WxCpInXmlMessage.class).fromXML(xml);
