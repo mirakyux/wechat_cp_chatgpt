@@ -79,7 +79,7 @@ public class MessageCache {
                 if (messages == null) {
                     messages = Lists.newArrayList();
                     chatGptCache.put(username, messages);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话\n如果回答内容被截断, 你可以说 \"继续\" 来获取剩余部分内容", username));
                 }
             }
         }
