@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @since 2023.03.29
  */
 public enum ErrorCode {
-    CONTEXT_LENGTH_EXCEEDED("context_length_exceeded", "ᓚᘏᗢ 刚才中了失忆术, 之前说的什么我都忘了! 再说一次吧(超出上下文大小限制, 所以清空了ᓚᘏᗢ)"),
+    CONTEXT_LENGTH_EXCEEDED("context_length_exceeded", "ᓚᘏᗢ 刚才中了失忆术, 之前说的什么我都忘了! 再说一次吧(超出上下文大小限制, 所以清空了, 尽量精简一下刚才的提问, 整理一下信息重新提问吧)"),
     NONE("none", "ᓚᘏᗢ 我也不知道发生了啥, 总之再试一次吧(未知错误, 需要看日志)");
 
     private static final Map<String, ErrorCode> OF_MAP = Arrays.stream(ErrorCode.values()).collect(Collectors.toMap(ErrorCode::getCode, Function.identity(), (a, b) -> a));

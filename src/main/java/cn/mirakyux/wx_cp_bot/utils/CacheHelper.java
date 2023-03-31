@@ -1,9 +1,10 @@
 package cn.mirakyux.wx_cp_bot.utils;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
-import java.util.concurrent.TimeUnit;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+import java.time.Duration;
 
 /**
  * CacheUtil
@@ -12,8 +13,8 @@ import java.util.concurrent.TimeUnit;
  * @since 2023.03.21
  */
 public class CacheHelper {
-    private static final Cache<String, String> cache = CacheBuilder.newBuilder()
-                .expireAfterWrite(120, TimeUnit.MINUTES)
+    private static final Cache<String, String> cache = Caffeine.newBuilder()
+                .expireAfterWrite(Duration.ofMinutes(120L))
                 .build();
 
     public static void set(String key, String value) {

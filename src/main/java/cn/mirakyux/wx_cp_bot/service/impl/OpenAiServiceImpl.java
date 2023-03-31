@@ -5,6 +5,7 @@ import cn.hutool.core.lang.generator.UUIDGenerator;
 import cn.hutool.http.HttpRequest;
 import cn.mirakyux.wx_cp_bot.core.configuration.OpenAiConfig;
 import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
+import cn.mirakyux.wx_cp_bot.core.constant.UrlConstant;
 import cn.mirakyux.wx_cp_bot.core.openai.context.MessageCache;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Role;
@@ -50,8 +51,6 @@ public class OpenAiServiceImpl implements OpenAiService {
         String id = generator.next();
         log.info("[{}] user: {}, text: {}", id, fromUser, text);
         Map<String, String> header = Maps.newHashMap();
-        String drawUrl = "https://api.openai.com/v1/chat/completions";
-        String cookie = "";
         header.put("Authorization", "Bearer " + openAiConfig.getApiKey());
         Map<String, Object> body = Maps.newHashMap();
         List<Message> messages = MessageCache.addAndGet(fromUser, Message.of(Role.USER, text));
@@ -63,7 +62,11 @@ public class OpenAiServiceImpl implements OpenAiService {
 
         String response = null;
         try {
-            response = HttpRequest.post(drawUrl).addHeaders(header).body(JsonUtil.toJsonString(body)).cookie(cookie).execute().body();
+            response = HttpRequest.post(UrlConstant.OPEN_AI_CHAT_COMPLETIONS)
+                    .addHeaders(header)
+                    .body(JsonUtil.toJsonString(body))
+                    .execute()
+                    .body();
 
             if (StringUtils.isBlank(response)) {
                 return BaseConstant.NOTICE_TIMEOUT;
@@ -77,6 +80,7 @@ public class OpenAiServiceImpl implements OpenAiService {
                 result = error.getCode().getTips();
                 MessageCache.clear(fromUser);
             } else {
+                // 有多个 choice 只取第一个
                 result = completion.getMessage().getContent();
 
                 MessageCache.addAndGet(fromUser, Message.of(Role.ASSISTANT, result));
@@ -99,12 +103,11 @@ public class OpenAiServiceImpl implements OpenAiService {
     @Override
     public String getBalance() {
         Map<String, String> header = Maps.newHashMap();
-        String url = "https://api.openai.com/dashboard/billing/credit_grants";
         header.put("Authorization", "Bearer " + openAiConfig.getApiKey());
 
         String response;
         try {
-            response = HttpRequest.get(url).addHeaders(header).execute().body();
+            response = HttpRequest.get(UrlConstant.OPEN_AI_BILLING).addHeaders(header).execute().body();
         } catch (Exception e) {
             return BaseConstant.NOTICE_TIMEOUT;
         }

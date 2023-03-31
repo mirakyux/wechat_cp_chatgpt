@@ -2,6 +2,7 @@ package cn.mirakyux.wx_cp_bot.service.impl;
 
 import cn.hutool.http.HttpRequest;
 import cn.mirakyux.wx_cp_bot.core.configuration.WxMpConfig;
+import cn.mirakyux.wx_cp_bot.core.constant.UrlConstant;
 import cn.mirakyux.wx_cp_bot.core.cp.crypto.WXBizMsgCrypt;
 import cn.mirakyux.wx_cp_bot.core.cp.model.WxCpTextMessage;
 import cn.mirakyux.wx_cp_bot.service.WxMpService;
@@ -35,10 +36,8 @@ public class WxMpServiceImpl implements WxMpService {
             log.info("cache data:{}", data);
             return data;
         }
-        String corpId = wxMpConfig.getCorpID();
-        String corpSecret = wxMpConfig.getCorpSecret();
-        String url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=" + corpId +
-                "&corpsecret=" + corpSecret;
+        
+        String url = String.format(UrlConstant.WX_CP_ACCESS_URL, wxMpConfig.getCorpID(), wxMpConfig.getCorpSecret());
 
         String jsonData = HttpRequest.get(url).execute().body();
 
@@ -73,7 +72,7 @@ public class WxMpServiceImpl implements WxMpService {
             log.error("sendMsg getAccessToken error", e);
             return;
         }
-        String url = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + accessToken;
+        String url = String.format(UrlConstant.WX_CP_REQUEST_URL, accessToken);
 
         WxCpTextMessage message = WxCpTextMessage.generator(to, msg, wxMpConfig.getAgentId());
 

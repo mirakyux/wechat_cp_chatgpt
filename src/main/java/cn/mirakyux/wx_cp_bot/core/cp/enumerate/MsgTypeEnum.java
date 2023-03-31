@@ -21,6 +21,7 @@ public enum MsgTypeEnum {
     VIDEO("video", "视频"),
     LOCATION("location", "地理位置"),
     LINK("link", "链接"),
+    EVENT("event", "事件"),
     UNDEFINED("undefined", "其他");
 
     private final String msgType;
