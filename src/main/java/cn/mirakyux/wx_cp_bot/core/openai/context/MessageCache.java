@@ -1,5 +1,6 @@
 package cn.mirakyux.wx_cp_bot.core.openai.context;
 
+import cn.mirakyux.wx_cp_bot.core.constant.BaseConstant;
 import cn.mirakyux.wx_cp_bot.core.event.SendWxCpEvent;
 import cn.mirakyux.wx_cp_bot.core.openai.model.Message;
 import com.github.benmanes.caffeine.cache.*;
@@ -49,13 +50,13 @@ public class MessageCache {
                         return;
                     }
                     log.info("user[{}] context has been expired", key);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 虽然不一定准时, 但是一定有个会话已经过期了", key));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent(BaseConstant.CONTEXT_EXPIRE, key));
                 }
             })
             .build();
 
-    public static void put(String username, List<Message> gptMessageDtos) {
-        chatGptCache.put(username, gptMessageDtos);
+    public static void put(String username, List<Message> messages) {
+        chatGptCache.put(username, messages);
     }
 
     public static List<Message> addAndGet(String username, Message message) {
@@ -63,7 +64,7 @@ public class MessageCache {
             List<Message> messages = chatGptCache.getIfPresent(username);
             if (messages == null) {
                 messages = Lists.newArrayList();
-                applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话", username));
+                applicationEventPublisher.publishEvent(new SendWxCpEvent(String.format(BaseConstant.OPEN_CONTEXT, CONTEXT_EXPIRE_MINUTES), username));
             }
             messages.add(message);
             chatGptCache.put(username, messages);
@@ -79,7 +80,7 @@ public class MessageCache {
                 if (messages == null) {
                     messages = Lists.newArrayList();
                     chatGptCache.put(username, messages);
-                    applicationEventPublisher.publishEvent(new SendWxCpEvent("ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 " + CONTEXT_EXPIRE_MINUTES + " 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话\n如果回答内容被截断, 你可以说 \"继续\" 来获取剩余部分内容", username));
+                    applicationEventPublisher.publishEvent(new SendWxCpEvent(String.format(BaseConstant.OPEN_CONTEXT, CONTEXT_EXPIRE_MINUTES), username));
                 }
             }
         }

@@ -18,4 +18,8 @@ public class BaseConstant {
     public static final String WELCOME = "ᓚᘏᗢ 说点什么吧";
 
     public static final String PIC_URL = "ᓚᘏᗢ 图片下载链接: %s";
+
+    public static final String OPEN_CONTEXT = "ᓚᘏᗢ 开启新的会话, 本会话将会在闲置 %s 分钟后过期\n你可以说 \"结束会话\" 来终止本次会话\n如果回答内容被截断, 你可以说 \"继续\" 来获取剩余部分内容";
+
+    public static final String CONTEXT_EXPIRE = "ᓚᘏᗢ 虽然不一定准时, 但是一定有个会话已经过期了";
 }
