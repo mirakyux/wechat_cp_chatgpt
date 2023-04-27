@@ -13,3 +13,5 @@ wechat:
     corpSecret: [自建应用-详情页-Secret]
     agentId: [自建应用-应用管理详情页-AgentId]
     corpID: [企业微信管理后台-我的企业-企业信息-最下面的企业ID]
+    messageLength: 1024
+    waitTime: 500

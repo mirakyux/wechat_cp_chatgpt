@@ -20,6 +20,9 @@ wechat:
     corpSecret: [自建应用-详情页-Secret]
     agentId: [自建应用-应用管理详情页-AgentId]
     corpID: [企业微信管理后台-我的企业-企业信息-最下面的企业ID]
+    messageLength: [单个消息字节数, 默认为1024, 不要超过2047]
+    waitTime: [消息间延迟时间, 当返回消息拆成多条消息时, 如果不增加延迟可能微信收到消息顺序会错乱]
 ```
 
-![img.png](img/example.png)
+![img.png](img/example1.png)
+![img.png](img/example2.png)

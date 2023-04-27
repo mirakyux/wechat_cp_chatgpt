@@ -34,4 +34,8 @@ public class WxCpConfig {
 
     @NotNull
     private String agentId;
+
+    private Integer messageLength = 1024;
+
+    private Long waitTime = 500L;
 }
