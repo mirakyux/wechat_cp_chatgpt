@@ -1,5 +1,6 @@
 package cn.mirakyux.wx_cp_bot.core.configuration;
 
+import cn.mirakyux.wx_cp_bot.core.constant.UrlConstant;
 import cn.mirakyux.wx_cp_bot.core.openai.enumerate.Model;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,8 @@ import java.math.BigDecimal;
 @Component
 @ConfigurationProperties(prefix = "open-ai")
 public class OpenAiConfig {
+    private String url = UrlConstant.OPEN_AI_CHAT_COMPLETIONS;
+
     @NotNull
     private String apiKey;
 

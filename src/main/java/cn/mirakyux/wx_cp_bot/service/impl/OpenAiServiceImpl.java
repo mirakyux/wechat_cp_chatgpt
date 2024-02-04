@@ -61,7 +61,7 @@ public class OpenAiServiceImpl implements OpenAiService {
 
         String response = null;
         try {
-            response = HttpRequest.post(UrlConstant.OPEN_AI_CHAT_COMPLETIONS)
+            response = HttpRequest.post(openAiConfig.getUrl())
                     .addHeaders(header)
                     .body(JsonUtil.toJsonString(body))
                     .execute()
